@@ -6,6 +6,8 @@ function App() {
   const [playerNumber, setPlayerNumber] = useState(null);
   const [player1Gesture, setPlayer1Gesture] = useState("No gesture detected");
   const [player2Gesture, setPlayer2Gesture] = useState("No gesture detected");
+  const [player1Health, setPlayer1Health] = useState(100);
+  const [player2Health, setPlayer2Health] = useState(100);
 
   useEffect(() => {
     socketRef.current = io("http://localhost:5000");
@@ -19,6 +21,14 @@ function App() {
         setPlayer1Gesture(gesture);
       } else {
         setPlayer2Gesture(gesture);
+      }
+    });
+
+    socketRef.current.on("health_update", ({ playerNumber, health }) => {
+      if (playerNumber === 1) {
+        setPlayer1Health(health);
+      } else {
+        setPlayer2Health(health);
       }
     });
 
@@ -44,10 +54,12 @@ function App() {
       <div>
         <h2>Player 1</h2>
         <p>{player1Gesture}</p>
+        <p>Health: {player1Health}</p>
       </div>
       <div>
         <h2>Player 2</h2>
         <p>{player2Gesture}</p>
+        <p>Health: {player2Health}</p>
       </div>
     </div>
   );

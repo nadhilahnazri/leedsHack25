@@ -12,6 +12,7 @@ const io = socketIo(server, {
 });
 
 let players = [];  // Store connected players
+let playerHealth = { 1: 100, 2: 100 };  // Initial HP for Player 1 & 2
 
 io.on("connection", (socket) => {
   console.log(`A player connected: ${socket.id}`);
@@ -35,6 +36,14 @@ io.on("connection", (socket) => {
     console.log(`Player ${playerNumber} sent gesture: ${gesture}`);
     // Broadcast the gesture to the other player
     socket.broadcast.emit("opponent_gesture", { playerNumber, gesture });
+  });
+
+  // Handle health updates from players (e.g., when an attack happens)
+  socket.on("health_update", (newHealth) => {
+    playerHealth[playerNumber] = newHealth;
+    console.log(`Player ${playerNumber} HP updated: ${newHealth}`);
+    // Broadcast updated health to both players
+    io.emit("player_health", playerHealth);
   });
 
   // Handle disconnection

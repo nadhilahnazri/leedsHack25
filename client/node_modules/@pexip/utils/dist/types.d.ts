@@ -1,0 +1,1 @@
+export type Fn<T extends unknown[], R> = (...args: T) => R;

@@ -47,3 +47,30 @@ export const CreateMeeting = (): JSX.Element => {
     </div>
   )
 }
+// import { useState } from 'react';
+// import { PexRTC } from '@pexip/pexrtc';
+
+// export const CreateMeeting = () => {
+//   const [meetingId, setMeetingId] = useState("");
+
+//   const startMeeting = () => {
+//     const rtc = new PexRTC();
+//     rtc.makeCall("your.pexip.server", meetingId, "guest");
+
+//     // Replace default camera with processed video feed
+//     rtc.setVideoSrc("http://your-server-ip:5001/video_feed");
+//   };
+
+//   return (
+//     <div>
+//       <h1>Create Meeting</h1>
+//       <input
+//         type="text"
+//         value={meetingId}
+//         onChange={(e) => setMeetingId(e.target.value)}
+//         placeholder="Enter Meeting ID"
+//       />
+//       <button onClick={startMeeting}>Start Meeting</button>
+//     </div>
+//   );
+// };

@@ -1,36 +1,20 @@
 import cv2
 import mediapipe as mp
 import socketio
+import base64
 import time
 
 # Initialize Socket.IO client
 sio = socketio.Client()
-
-def connect_to_server():
-    """Attempt to connect to the server with retries."""
-    while not sio.connected:
-        try:
-            sio.connect("http://localhost:5000")  # Change if needed
-            print("✅ Connected to WebSocket server")
-        except Exception as e:
-            print(f"🔴 Connection failed, retrying... {e}")
-            time.sleep(2)
-
-connect_to_server()  # Try to connect when script starts
+sio.connect("http://localhost:5000")  # Replace with your actual server IP
 
 # Initialize MediaPipe
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 mp_drawing = mp.solutions.drawing_utils
 
-last_gesture = None  # Store the last detected gesture
-
-def send_gesture_to_server(gesture):
-    """Send the detected gesture to the server via WebSocket, avoiding spam."""
-    global last_gesture
-    if gesture != last_gesture:  # Only send if different from last one
-        sio.emit("gesture_detected", {"gesture": gesture})
-        last_gesture = gesture  # Update last sent gesture
+# Store the last detected gesture to avoid sending the same gesture repeatedly
+last_gesture = None
 
 def is_thumb_extended(hand_landmarks, handedness):
     """Detect if the thumb is extended based on hand orientation."""
@@ -66,7 +50,13 @@ def classify_hand_sign(hand_landmarks, handedness):
     else:
         return "Unknown Gesture"
 
-# Open webcam
+def send_gesture_to_server(gesture):
+    """Send the detected gesture to the server via WebSocket, avoiding spam."""
+    global last_gesture
+    if gesture != last_gesture:  # Only send if different from last one
+        sio.emit("gesture_detected", {"gesture": gesture})
+        last_gesture = gesture  # Update last sent gesture
+
 cap = cv2.VideoCapture(0)
 
 while cap.isOpened():
@@ -74,6 +64,7 @@ while cap.isOpened():
     if not ret:
         break
 
+    # Convert frame to RGB for MediaPipe processing
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     result = hands.process(rgb_frame)
 
@@ -91,10 +82,14 @@ while cap.isOpened():
             # Send gesture to the server
             send_gesture_to_server(gesture)
 
-    cv2.imshow("Hand Sign Recognition", frame)
+    # Encode frame to base64
+    _, buffer = cv2.imencode(".jpg", frame)
+    frame_data = base64.b64encode(buffer).decode("utf-8")
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    # Send video frame to server
+    sio.emit("video_frame", {"frame": frame_data})
+
+    time.sleep(0.03)  # Prevent flooding the server
 
 cap.release()
 cv2.destroyAllWindows()

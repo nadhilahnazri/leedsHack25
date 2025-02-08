@@ -1,26 +1,50 @@
 import cv2
 import mediapipe as mp
+import socketio
+import time
+
+# Initialize Socket.IO client
+sio = socketio.Client()
+
+def connect_to_server():
+    """Attempt to connect to the server with retries."""
+    while not sio.connected:
+        try:
+            sio.connect("http://localhost:5000")  # Change if needed
+            print("✅ Connected to WebSocket server")
+        except Exception as e:
+            print(f"🔴 Connection failed, retrying... {e}")
+            time.sleep(2)
+
+connect_to_server()  # Try to connect when script starts
 
 # Initialize MediaPipe
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 mp_drawing = mp.solutions.drawing_utils
 
+last_gesture = None  # Store the last detected gesture
+
+def send_gesture_to_server(gesture):
+    """Send the detected gesture to the server via WebSocket, avoiding spam."""
+    global last_gesture
+    if gesture != last_gesture:  # Only send if different from last one
+        sio.emit("gesture_detected", {"gesture": gesture})
+        last_gesture = gesture  # Update last sent gesture
+
 def is_thumb_extended(hand_landmarks, handedness):
     """Detect if the thumb is extended based on hand orientation."""
-    thumb_tip = hand_landmarks.landmark[4].x  # Thumb tip X position
-    thumb_mcp = hand_landmarks.landmark[2].x  # Thumb MCP (lower joint) X position
+    thumb_tip = hand_landmarks.landmark[4].x
+    thumb_mcp = hand_landmarks.landmark[2].x
 
-    if handedness == "Right":
-        return thumb_tip > thumb_mcp  # Right hand: thumb moves right
-    else:
-        return thumb_tip < thumb_mcp  # Left hand: thumb moves left
+    return thumb_tip > thumb_mcp if handedness == "Right" else thumb_tip < thumb_mcp
 
 def is_finger_extended(hand_landmarks, tip, mcp):
     """Returns True if the given finger is extended, False if curled."""
     return hand_landmarks.landmark[tip].y < hand_landmarks.landmark[mcp].y
 
 def classify_hand_sign(hand_landmarks, handedness):
+    """Classify the detected hand gesture."""
     thumb = is_thumb_extended(hand_landmarks, handedness)
     index = is_finger_extended(hand_landmarks, 8, 6)
     middle = is_finger_extended(hand_landmarks, 12, 10)
@@ -64,6 +88,8 @@ while cap.isOpened():
             cv2.putText(frame, f"Gesture: {gesture}", (50, 50 + i * 30), 
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
+            # Send gesture to the server
+            send_gesture_to_server(gesture)
 
     cv2.imshow("Hand Sign Recognition", frame)
 

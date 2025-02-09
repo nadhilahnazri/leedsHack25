@@ -111,7 +111,7 @@ mp_drawing = mp.solutions.drawing_utils
 # Store last gesture to avoid sending the same gesture repeatedly
 last_gesture = None
 
-# Gesture classification functions
+# Gesture classification functions (unchanged)
 def is_thumb_extended(hand_landmarks, handedness):
     """Detect if the thumb is extended based on hand orientation."""
     thumb_tip = hand_landmarks.landmark[4].x
@@ -184,8 +184,10 @@ def start_video_capture():
         _, buffer = cv2.imencode(".jpg", frame)
         frame_data = base64.b64encode(buffer).decode("utf-8")
 
-        # Send frame and gesture to server
+        # Send frame to server
         sio.emit("video_frame", {"frame": frame_data})
+
+        # Send gesture to server (only for local vision system)
         send_gesture_to_server(detected_gesture)
 
         time.sleep(0.03)  # Prevent flooding the server
@@ -199,6 +201,7 @@ def connect_to_server():
     while not sio.connected:
         try:
             sio.connect("http://localhost:5000")  # Replace with your actual server IP
+            sio.emit("set_local")  # Identify as the local vision system
             print("✅ Connected to WebSocket server")
             start_video_capture()  # Start video capture once connected
         except Exception as e:

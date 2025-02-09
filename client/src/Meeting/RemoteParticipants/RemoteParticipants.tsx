@@ -77,8 +77,6 @@ export const RemoteParticipants = (
 
   const participants = remoteParticipantsIds.map((participantId) => {
     const { audioStream, videoStream } = getMediaStreams(participantId)
-    // allocate hp data
-    const hp = Math.floor(Math.random() * 100)
 
     return (
       <Participant
@@ -89,7 +87,6 @@ export const RemoteParticipants = (
         key={participantId}
         sinkId={props.sinkId}
         semantic="main"
-        hp={hp}
       />
     )
   })
@@ -118,7 +115,6 @@ export const RemoteParticipants = (
         key={`${participantId}-presentation`}
         sinkId={props.sinkId}
         semantic="presentation"
-        hp={0}
       />
     )
   })

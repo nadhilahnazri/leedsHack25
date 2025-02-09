@@ -9,6 +9,7 @@ interface ParticipantProps {
   videoStream: MediaStream | null
   sinkId: string
   semantic: 'main' | 'presentation' | 'misc'
+  colour: string // new changes
 }
 
 export const Participant = (props: ParticipantProps): JSX.Element => {
@@ -26,7 +27,12 @@ export const Participant = (props: ParticipantProps): JSX.Element => {
   }
 
   return (
-    <Cell className="Cell" xs={12} md={props.md}>
+    <Cell
+      className="Cell"
+      xs={12}
+      md={props.md}
+      style={{ borderColor: props.colour, borderWidth: '2px', borderStyle: 'solid' }}
+    >
       {props.videoStream != null && !videoMuted && (
         <Video
           className="RemoteVideo"
@@ -52,4 +58,31 @@ export const Participant = (props: ParticipantProps): JSX.Element => {
       )}
     </Cell>
   )
+  // return (
+  //   <Cell className="Cell" xs={12} md={props.md}>
+  //     {props.videoStream != null && !videoMuted && (
+  //       <Video
+  //         className="RemoteVideo"
+  //         title={props.participantId}
+  //         srcObject={props.videoStream}
+  //         style={{ objectFit: props.semantic === 'main' ? 'cover' : 'contain' }}
+  //       />
+  //     )}
+  //     {(props.videoStream == null || videoMuted) && (
+  //       <div className="NoStreamContainer">
+  //         <Icon
+  //           className="ParticipantIcon"
+  //           source={IconTypes.IconParticipant}
+  //         />
+  //       </div>
+  //     )}
+  //     {props.audioStream != null && (
+  //       <Audio
+  //         srcObject={props.audioStream}
+  //         autoPlay={true}
+  //         sinkId={props.sinkId}
+  //       />
+  //     )}
+  //   </Cell>
+  // )
 }

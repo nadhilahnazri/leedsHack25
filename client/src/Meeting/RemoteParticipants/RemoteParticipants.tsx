@@ -10,12 +10,13 @@ interface RemoteParticipantsProps {
   streamsInfo: StreamInfo[]
   remoteTransceiversConfig: TransceiverConfig[]
   sinkId: string
+  colors: { [participantId: string]: string } // Add colors property
 }
 
 export const RemoteParticipants = (
   props: RemoteParticipantsProps
 ): JSX.Element => {
-  const { remoteParticipantsIds, streamsInfo, remoteTransceiversConfig } = props
+  const { remoteParticipantsIds, streamsInfo, remoteTransceiversConfig, colors } = props
 
   const getMediaStreams = (
     participantId: string
@@ -86,6 +87,7 @@ export const RemoteParticipants = (
         key={participantId}
         sinkId={props.sinkId}
         semantic="main"
+        colour={colors[participantId]}
       />
     )
   })
@@ -114,6 +116,7 @@ export const RemoteParticipants = (
         key={`${participantId}-presentation`}
         sinkId={props.sinkId}
         semantic="presentation"
+        colour='blue'
       />
     )
   })

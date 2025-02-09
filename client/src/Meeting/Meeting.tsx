@@ -400,6 +400,11 @@ export const Meeting = ({ playerColour }: MeetingProps): JSX.Element => {
 
   return (
     <div className="Meeting">
+      {/* Room Code Display */}
+      <div style={{ position: 'absolute', top: '50px', left: '10px', color: 'white' }}>
+        Room Code: {meetingId}
+      </div>
+
       {remoteParticipantsIds.length > 0 && (
         <RemoteParticipants
           remoteParticipantsIds={remoteParticipantsIds}

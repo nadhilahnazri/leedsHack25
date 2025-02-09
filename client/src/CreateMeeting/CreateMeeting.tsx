@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Box, BoxHeader, Button } from '@pexip/components'
 import { useNavigate } from 'react-router-dom'
 import { config } from '../config'
@@ -11,19 +12,28 @@ interface CreateMeetingProps {
 
 export const CreateMeeting = ({ playerColour, setPlayerColour }: CreateMeetingProps): JSX.Element => {
   const navigate = useNavigate()
+  const [meetingCode, setMeetingCode] = useState<string>(''); // State for meeting code
 
-  const handleClick = async (): Promise<void> => {
-    const url = config.server
+  const handleCreateClick = async (): Promise<void> => {
+    const url = config.server;
     try {
       const response = await fetch(`${url}/meetings`, {
         method: 'POST'
-      })
-      const data = await response.json()
-      navigate(`/meetings/${data.id}`)
+      });
+      const data = await response.json();
+      navigate(`/meetings/${data.id}`);
     } catch (e) {
-      console.error('Cannot create the meeting')
+      console.error('Cannot create the meeting', e);
     }
-  }
+  };
+
+  const handleJoinClick = (): void => {
+    if (meetingCode.trim() !== '') {
+      navigate(`/meetings/${meetingCode}`);
+    } else {
+      console.error('Meeting code is required');
+    }
+  };
 
   return (
     <div className="CreateMeeting">
@@ -61,7 +71,22 @@ export const CreateMeeting = ({ playerColour, setPlayerColour }: CreateMeetingPr
             </div>
             <br />
             <p>Chosen color: {playerColour || 'red'}</p>
-          {/* end of new changes */}
+
+          <div className="JoinContainer">
+          <input
+            type="text"
+            placeholder="Enter meeting code"
+            value={meetingCode}
+            onChange={(e) => setMeetingCode(e.target.value)} // Update state on input change
+          />
+          <Button
+            variant="primary"
+            colorScheme="light"
+            onClick={handleJoinClick}
+          >
+            Join
+          </Button>
+        </div>
 
           <br />
             <p>
@@ -72,7 +97,7 @@ export const CreateMeeting = ({ playerColour, setPlayerColour }: CreateMeetingPr
             colorScheme="light"
             onClick={() => {
               console.log(`Player color selected: ${playerColour}`);
-              handleClick().catch((e) => {
+              handleCreateClick().catch((e) => {
                 console.error(e)
               })
             }}

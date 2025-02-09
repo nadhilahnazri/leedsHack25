@@ -378,7 +378,7 @@ export const Meeting = (): JSX.Element => {
     ),
     [videoTrackId]
   )
-
+  /*
   useEffect(() => {
     const interval = setInterval(() => {
       setHpProgress((prev) => {
@@ -392,7 +392,7 @@ export const Meeting = (): JSX.Element => {
 
     return () => clearInterval(interval);
   }, []);
-
+  */
 
   return (
     <div className="Meeting">

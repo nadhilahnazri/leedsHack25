@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
+import "./WebcamPage.css"; // Import the CSS file
 
-const socket = io("http://10.41.180.28:5000");
+const socket = io("http://localhost:5000");
 
 export const WebcamPage = () => {
   const [frames, setFrames] = useState<{ [key: string]: string }>({});
@@ -24,26 +25,26 @@ export const WebcamPage = () => {
     };
   }, []);
 
+  const usersWithFeeds = Object.entries(frames).filter(([_, frame]) => frame);
+
   return (
     <div className="webcam-container">
       <h1>Live Webcam Feeds</h1>
       <div className="webcam-grid">
-        {Object.entries(frames).map(([id, frame]) => (
-          <div key={id} className="webcam-feed">
-            <img src={`data:image/jpeg;base64,${frame}`} alt={`Webcam Feed ${id}`} />
-            {gestures[id] && <p>Gesture: {gestures[id]}</p>}
+        {usersWithFeeds.map(([id, frame]) => (
+          <div key={id} className="user-box">
+            <div className="webcam-feed">
+              <img 
+                src={`data:image/jpeg;base64,${frame}`} 
+                alt={`Webcam Feed ${id}`} 
+              />
+            </div>
+            <div className="gesture-info">
+              {gestures[id] ? `Gesture: ${gestures[id]}` : "No gesture detected"}
+            </div>
           </div>
         ))}
       </div>
-
-      <h2>Detected Gestures</h2>
-      <ul>
-        {Object.entries(gestures).map(([id, gesture]) => (
-          <li key={id}>
-            <strong>{id}:</strong> {gesture}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 };

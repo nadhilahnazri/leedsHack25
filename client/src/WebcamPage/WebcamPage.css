@@ -1,0 +1,33 @@
+/* WebcamPage.css */
+
+.webcam-container {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .webcam-grid {
+    display: flex; /* Use flexbox for horizontal layout */
+    flex-wrap: wrap; /* Allow wrapping if there are too many boxes */
+    gap: 20px; /* Space between boxes */
+    justify-content: center; /* Center the boxes horizontally */
+  }
+  
+  .webcam-box {
+    border: 2px solid #ccc; /* Add a border around each box */
+    border-radius: 10px; /* Rounded corners */
+    padding: 10px; /* Padding inside the box */
+    background-color: #f9f9f9; /* Light background color */
+    width: 300px; /* Fixed width for each box */
+    text-align: center; /* Center content inside the box */
+  }
+  
+  .webcam-feed img {
+    max-width: 100%; /* Ensure the image fits inside the box */
+    border-radius: 8px; /* Rounded corners for the image */
+  }
+  
+  .gesture-info {
+    margin-top: 10px; /* Space between the image and gesture text */
+    font-size: 16px; /* Font size for gesture information */
+    font-weight: bold; /* Bold text for gestures */
+  }

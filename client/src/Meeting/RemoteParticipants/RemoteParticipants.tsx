@@ -78,6 +78,7 @@ export const RemoteParticipants = (
 
   const participants = remoteParticipantsIds.map((participantId) => {
     const { audioStream, videoStream } = getMediaStreams(participantId)
+
     return (
       <Participant
         participantId={participantId}

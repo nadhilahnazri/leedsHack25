@@ -1,3 +1,4 @@
+import {useState, useEffect} from 'react';
 import { Box, BoxHeader, Button } from '@pexip/components'
 import { useNavigate } from 'react-router-dom'
 import { config } from '../config'
@@ -22,14 +23,51 @@ export const CreateMeeting = (): JSX.Element => {
 
   return (
     <div className="CreateMeeting">
+      <div className="lobby">
+        <h1>PexipPlay 🤜🤛</h1>
+      </div>
       <Box colorScheme="light">
         <BoxHeader>
-          <h3>Create Meeting</h3>
+          <h3>Welcome to the Lobby</h3>
         </BoxHeader>
         <div className="BoxContainer">
+          {/* player name */}
+          <label htmlFor="playerName">Enter your name:</label>
+          <input
+          type="text"
+          id="playerName"
+          name="playerName"
+          placeholder={`player${Math.floor(Math.random() * 1000)}`}
+          onChange={(e) => setPlayerName(e.target.value)}
+          />
+
+          {/* enter shared url */}
+          <label htmlFor="gameUrl">Enter game URL:</label>
+          <input
+            type="text"
+            id="gameUrl"
+            name="gameUrl"
+            placeholder="https://example.com/meeting/123"
+            onChange={(e) => setGameUrl(e.target.value)}
+          />
+          <Button
+            variant="secondary"
+            colorScheme="light"
+            onClick={() => {
+              if (gameUrl) {
+                navigate(gameUrl)
+              } else {
+                console.error('No URL provided')
+              }
+            }}
+          >
+            Join Game
+          </Button>
+          {/* end of new changes */}
+
+
           <p>
-            Click on <b>Create Meeting</b> and share the link with other
-            participants.
+            Click on <b>Create Game</b> and share link with other players.
           </p>
           <Button
             variant="primary"
@@ -40,7 +78,7 @@ export const CreateMeeting = (): JSX.Element => {
               })
             }}
           >
-            Create Meeting
+            Create Game
           </Button>
         </div>
       </Box>

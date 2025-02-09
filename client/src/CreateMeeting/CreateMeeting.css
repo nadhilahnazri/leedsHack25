@@ -1,16 +1,37 @@
 .CreateMeeting {
-    width: 350px;
-  
-    .BoxContainer {
-      padding: 2em;
-  
-      p {
-        text-align: left;
-        margin-bottom: 2em;;
-      }
-  
-      button {
-        width: 100%;
-      }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "Lucida Console", "Courier New", monospace !important;
+
+  .lobby {
+    padding-bottom: 3em;
+    width: 100% !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    h1 {
+      color: white;
+      text-shadow: 1px 2px 0px #ff00ff, -1.5px -2px 0px #00ffff;
+      white-space: nowrap;
+      text-align: center;
     }
   }
+
+  .BoxContainer {
+    padding: 2em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    p {
+      text-align: left;
+      margin-bottom: 2em;
+    }
+
+    button {
+      width: 100%;
+    }
+  }
+}

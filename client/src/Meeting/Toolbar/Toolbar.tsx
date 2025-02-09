@@ -78,25 +78,25 @@ export const Toolbar = (props: ToolbarProps): JSX.Element => {
     setVideoMuted(!videoMuted)
   }
 
-  const handlePressShareScreen = async (): Promise<void> => {
-    let stream
-    if (props.presentationStream != null) {
-      props.presentationStream.getVideoTracks().forEach((track) => {
-        track.stop()
-      })
-      props.vpaas.stopPresenting()
-    } else {
-      stream = await navigator.mediaDevices.getDisplayMedia()
-      stream.getVideoTracks()[0].onended = handleEndShareScreen
-      props.vpaas.present(stream)
-    }
-    props.onPresentationStreamChange(stream)
-  }
+  // const handlePressShareScreen = async (): Promise<void> => {
+  //   let stream
+  //   if (props.presentationStream != null) {
+  //     props.presentationStream.getVideoTracks().forEach((track) => {
+  //       track.stop()
+  //     })
+  //     props.vpaas.stopPresenting()
+  //   } else {
+  //     stream = await navigator.mediaDevices.getDisplayMedia()
+  //     stream.getVideoTracks()[0].onended = handleEndShareScreen
+  //     props.vpaas.present(stream)
+  //   }
+  //   props.onPresentationStreamChange(stream)
+  // }
 
-  const handleEndShareScreen = (): void => {
-    props.vpaas.stopPresenting()
-    props.onPresentationStreamChange(undefined)
-  }
+  // const handleEndShareScreen = (): void => {
+  //   props.vpaas.stopPresenting()
+  //   props.onPresentationStreamChange(undefined)
+  // }
 
   const handlePressDisconnect = (): void => {
     props.localStream?.getTracks().forEach((track) => {
@@ -153,21 +153,6 @@ export const Toolbar = (props: ToolbarProps): JSX.Element => {
           onClick={props.onSettingsOpen}
         >
           <Icon source={IconTypes.IconSettings} />
-        </Button>
-      </Tooltip>
-
-      <Tooltip text="Share screen">
-        <Button
-          variant="translucent"
-          modifier="square"
-          onClick={() => {
-            handlePressShareScreen().catch((e) => {
-              console.error(e)
-            })
-          }}
-          isActive={props.presentationStream != null}
-        >
-          <Icon source={IconTypes.IconPresentationOn} />
         </Button>
       </Tooltip>
 

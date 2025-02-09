@@ -28,7 +28,7 @@ io.on("connection", (socket) => {
   players.push({ id: socket.id, playerNumber });
 
   // Inform the player about their assigned player number
-  socket.emit("player_assigned", `Player ${playerNumber}`);
+  socket.emit("player_assigned", playerNumber);
   console.log(`Player ${playerNumber} connected.`);
 
   // Handle gesture updates from the player
@@ -45,6 +45,13 @@ io.on("connection", (socket) => {
     // Broadcast updated health to both players
     io.emit("player_health", playerHealth);
   });
+
+  // Check if the player's health is 0 or less and broadcast game over
+  if (newHealth <= 0) {
+    const winner = playerNumber === 1 ? 2 : 1;
+    io.emit("game_over", { winner });
+  }
+});
 
   // Handle disconnection
   socket.on("disconnect", () => {

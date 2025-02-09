@@ -34,6 +34,8 @@ let vpaas: Vpaas
 export const Meeting = (): JSX.Element => {
   const { meetingId } = useParams()
 
+  const [hpProgress, setHpProgress] = useState(100);
+
   const [participant, setParticipant] = useState<Participant>()
   const [localStream, setLocalStream] = useState<MediaStream>()
   const [presentationStream, setPresentationStream] = useState<MediaStream>()
@@ -377,6 +379,21 @@ export const Meeting = (): JSX.Element => {
     [videoTrackId]
   )
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHpProgress((prev) => {
+        if (prev <= 0) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1; // HPが1%ずつ減る
+      });
+    }, 1000); // 1秒ごとにHPが減少
+
+    return () => clearInterval(interval);
+  }, []);
+
+
   return (
     <div className="Meeting">
       {remoteParticipantsIds.length > 0 && (
@@ -387,11 +404,11 @@ export const Meeting = (): JSX.Element => {
           sinkId={sinkId}
         />
       )}
-
+  
       {remoteParticipantsIds.length === 0 && (
         <h2 className="NoParticipants">Waiting for other participants...</h2>
       )}
-
+  
       <div className="PipContainer">
         {isStreamActive(localStream) && selfie}
         {isStreamActive(presentationStream) && (
@@ -401,7 +418,7 @@ export const Meeting = (): JSX.Element => {
           />
         )}
       </div>
-
+  
       <Settings
         isOpen={settingsOpen}
         onCancel={() => {
@@ -413,7 +430,7 @@ export const Meeting = (): JSX.Element => {
           })
         }}
       />
-
+  
       {vpaas != null && (
         <Toolbar
           vpaas={vpaas}
@@ -426,6 +443,11 @@ export const Meeting = (): JSX.Element => {
           }}
         />
       )}
+  
+      {/* HP Bar */}
+      <div className="HpBarContainer">
+        <div className="HpBar" style={{ width: `${hpProgress}%` }}></div>
+      </div>
     </div>
   )
 }

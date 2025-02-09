@@ -9,10 +9,12 @@ interface ParticipantProps {
   videoStream: MediaStream | null
   sinkId: string
   semantic: 'main' | 'presentation' | 'misc'
+  hp: number
 }
 
 export const Participant = (props: ParticipantProps): JSX.Element => {
   const [videoMuted, setVideoMuted] = useState(false)
+  const [hp, setHp] = useState(100) 
 
   const videoTracks = props.videoStream?.getVideoTracks()
   if (videoTracks != null && videoTracks.length > 0) {
@@ -24,6 +26,11 @@ export const Participant = (props: ParticipantProps): JSX.Element => {
       setVideoMuted(false)
     }
   }
+
+    // change the hp bar
+    const decreaseHp = () => {
+      setHp((prevHp) => Math.max(prevHp - 10, 0))  // HP decrease rate is 10
+    }
 
   return (
     <Cell className="Cell" xs={12} md={props.md}>
@@ -50,6 +57,15 @@ export const Participant = (props: ParticipantProps): JSX.Element => {
           sinkId={props.sinkId}
         />
       )}
+      {/* adding hp bar */}
+      <div className="hp-bar">
+        <div
+          className="hp-bar-fill"
+          style={{
+            width: `${props.hp}%`, // hp bar width
+          }}
+        />
+      </div>
     </Cell>
   )
 }

@@ -41,4 +41,22 @@
       margin: auto;
       color: white;
     }
+
+    .HpBarContainer {
+      position: absolute;
+      top: 10px;  /* 10px from the top */
+      left: 50%;  /* 50% from the left */
+      transform: translateX(-50%);  /* Center horizontally */
+      width: 80%;  /* 80% width */
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 5px;
+      height: 20px;  /* 20px height */
+    }
+    
+    .HpBar {
+      height: 100%;
+      background-color: green;
+      border-radius: 5px;
+    }
   }
+  

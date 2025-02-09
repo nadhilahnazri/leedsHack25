@@ -381,7 +381,6 @@ export const Meeting = ({ playerColour }: MeetingProps): JSX.Element => {
       />
     ),
     [videoTrackId]
-  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -396,7 +395,7 @@ export const Meeting = ({ playerColour }: MeetingProps): JSX.Element => {
 
     return () => clearInterval(interval);
   }, []);
-
+  */
 
   return (
     <div className="Meeting">

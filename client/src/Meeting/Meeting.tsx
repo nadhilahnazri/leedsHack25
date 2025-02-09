@@ -386,9 +386,9 @@ export const Meeting = (): JSX.Element => {
           clearInterval(interval);
           return 0;
         }
-        return prev - 1; // HPが1%ずつ減る
+        return prev - 1; // HP decreases by 1% every second
       });
-    }, 1000); // 1秒ごとにHPが減少
+    }, 1000); // 1 second interval
 
     return () => clearInterval(interval);
   }, []);

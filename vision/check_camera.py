@@ -1,6 +1,6 @@
 import cv2
 
-cap = cv2.VideoCapture(1)  # Try 1 or 2 if 0 doesn’t work
+cap = cv2.VideoCapture(0)  # Try 1 or 2 if 0 doesn’t work
 
 if not cap.isOpened():
     print("❌ Camera not detected. Check permissions or device index.")

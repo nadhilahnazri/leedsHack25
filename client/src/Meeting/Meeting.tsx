@@ -1,77 +1,81 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   createVpaas,
   createVpaasSignals,
   createRecvTransceivers,
   type Vpaas,
   type RosterEntry
-} from '@pexip/vpaas-sdk'
+} from '@pexip/vpaas-sdk';
 import type {
   MediaInit,
   TransceiverConfig,
   MediaEncodingParameters
-} from '@pexip/peer-connection'
-import { type Participant } from '@pexip/vpaas-api'
-import { type StreamInfo } from '../types/StreamInfo'
-import { config } from '../config'
-import { RemoteParticipants } from './RemoteParticipants/RemoteParticipants'
-import { Selfview } from '@pexip/media-components'
-import { Toolbar } from './Toolbar/Toolbar'
-import { filterMediaDevices } from '../filter-media-devices'
-import { Settings } from './Settings/Settings'
-import { RTPStreamId } from '../types/RTPStreamId'
-import { LocalStorageKey } from '../types/LocalStorageKey'
-import { Video } from '@pexip/components'
+} from '@pexip/peer-connection';
+import { type Participant } from '@pexip/vpaas-api';
+import { type StreamInfo } from '../types/StreamInfo';
+import { config } from '../config';
+import { RemoteParticipants } from './RemoteParticipants/RemoteParticipants';
+import { Selfview } from '@pexip/media-components';
+import { Toolbar } from './Toolbar/Toolbar';
+import { filterMediaDevices } from '../filter-media-devices';
+import { Settings } from './Settings/Settings';
+import { RTPStreamId } from '../types/RTPStreamId';
+import { LocalStorageKey } from '../types/LocalStorageKey';
+import { Video } from '@pexip/components';
 
-import './Meeting.css'
+import './Meeting.css';
 
-const RECV_AUDIO_COUNT = 9
-const RECV_VIDEO_COUNT = 9
+const RECV_AUDIO_COUNT = 9;
+const RECV_VIDEO_COUNT = 9;
 
-let vpaas: Vpaas
+let vpaas: Vpaas;
 
-export const Meeting = (): JSX.Element => {
-  const { meetingId } = useParams()
+interface MeetingProps {
+  playerColour: string;
+}
+
+export const Meeting = ({ playerColour }: MeetingProps): JSX.Element => {
+  const { meetingId } = useParams();
 
   const [hpProgress, setHpProgress] = useState(100);
 
-  const [participant, setParticipant] = useState<Participant>()
-  const [localStream, setLocalStream] = useState<MediaStream>()
-  const [presentationStream, setPresentationStream] = useState<MediaStream>()
-  const [sinkId, setSinkId] = useState<string>('')
+  const [participant, setParticipant] = useState<Participant>();
+  const [localStream, setLocalStream] = useState<MediaStream>();
+  const [presentationStream, setPresentationStream] = useState<MediaStream>();
+  const [sinkId, setSinkId] = useState<string>('');
 
   const [remoteTransceiversConfig, setRemoteTransceiversConfig] = useState<
     TransceiverConfig[]
-  >([])
-  const [roster, setRoster] = useState<Record<string, RosterEntry>>()
-  const [streamsInfo, setStreamsInfo] = useState<StreamInfo[]>([])
+  >([]);
+  const [roster, setRoster] = useState<Record<string, RosterEntry>>();
+  const [streamsInfo, setStreamsInfo] = useState<StreamInfo[]>([]);
 
-  const [settingsOpen, setSettingOpen] = useState(false)
+  const [settingsOpen, setSettingOpen] = useState(false);
 
   const initVpaas = (): Vpaas => {
-    const vpaasSignals = createVpaasSignals()
-    vpaasSignals.onRosterUpdate.add(handleRosterUpdate)
-    vpaasSignals.onRemoteStreams.add(handleRemoteStreams)
+    const vpaasSignals = createVpaasSignals();
+    vpaasSignals.onRosterUpdate.add(handleRosterUpdate);
+    vpaasSignals.onRemoteStreams.add(handleRemoteStreams);
 
-    return createVpaas({ vpaasSignals, config: {} })
-  }
+    return createVpaas({ vpaasSignals, config: {} });
+  };
 
   const handleRosterUpdate = (roster: Record<string, RosterEntry>): void => {
-    setRoster(roster)
+    setRoster(roster);
 
     // Check if we have a new stream
-    const activeStreamsIds: string[] = []
+    const activeStreamsIds: string[] = [];
     for (const [participantId, rosterEntry] of Object.entries(roster)) {
       for (const [streamId, stream] of Object.entries(rosterEntry.streams)) {
-        activeStreamsIds.push(streamId)
+        activeStreamsIds.push(streamId);
         const found = streamsInfo.some(
           (streamInfo) => streamInfo.streamId === streamId
-        )
+        );
         if (!found) {
-          let layers = []
+          let layers = [];
           if ((stream as any)?.layers != null) {
-            layers = (stream as any)?.layers
+            layers = (stream as any)?.layers;
           }
 
           streamsInfo.push({
@@ -80,41 +84,41 @@ export const Meeting = (): JSX.Element => {
             participantId,
             layers,
             semantic: stream.semantic
-          })
+          });
         }
       }
     }
 
     // Check if we should disconnect old streams
     streamsInfo.forEach((streamInfo) => {
-      const found = activeStreamsIds.includes(streamInfo.streamId)
+      const found = activeStreamsIds.includes(streamInfo.streamId);
       if (!found) {
         // Disconnect stream
         unsubscribeStream(streamInfo).catch((e) => {
-          console.error(e)
-        })
+          console.error(e);
+        });
         const index = streamsInfo.findIndex(
           (stream) => stream.streamId === streamInfo.streamId
-        )
-        streamsInfo.splice(index, 1)
+        );
+        streamsInfo.splice(index, 1);
       }
-      return found
-    })
+      return found;
+    });
 
-    setStreamsInfo([...streamsInfo])
-  }
+    setStreamsInfo([...streamsInfo]);
+  };
 
   const handleRemoteStreams = (config: TransceiverConfig): void => {
     const index = remoteTransceiversConfig.findIndex((transceiverConfig) => {
-      return transceiverConfig.transceiver?.mid !== config.transceiver?.mid
-    })
+      return transceiverConfig.transceiver?.mid !== config.transceiver?.mid;
+    });
     if (index > 0) {
-      remoteTransceiversConfig[index] = config
+      remoteTransceiversConfig[index] = config;
     } else {
-      remoteTransceiversConfig.push(config)
+      remoteTransceiversConfig.push(config);
     }
-    setRemoteTransceiversConfig([...remoteTransceiversConfig])
-  }
+    setRemoteTransceiversConfig([...remoteTransceiversConfig]);
+  };
 
   const subscribeStream = async (
     streamInfo: StreamInfo,
@@ -124,36 +128,36 @@ export const Meeting = (): JSX.Element => {
       (layer) => layer.rid === preferredRid
     )
       ? preferredRid
-      : undefined
+      : undefined;
 
     const response = await vpaas.requestStream({
       producer_id: streamInfo.participantId,
       stream_id: streamInfo.streamId,
       rid: (requestedRid as string) ?? null,
       receive_mid: null
-    })
+    });
 
-    streamInfo.mid = response.receive_mid
-    streamInfo.rid = requestedRid
-    setStreamsInfo([...streamsInfo])
-  }
+    streamInfo.mid = response.receive_mid;
+    streamInfo.rid = requestedRid;
+    setStreamsInfo([...streamsInfo]);
+  };
 
   const unsubscribeStream = async (streamInfo: StreamInfo): Promise<void> => {
-    const mid = streamInfo.mid
+    const mid = streamInfo.mid;
     if (mid != null) {
       await vpaas.disconnectStream({
         receive_mid: mid
-      })
+      });
     }
-    streamInfo.mid = undefined
-    setStreamsInfo([...streamsInfo])
-  }
+    streamInfo.mid = undefined;
+    setStreamsInfo([...streamsInfo]);
+  };
 
   const getApiAddress = async (): Promise<string> => {
-    const response = await fetch(`${config.server}/api-address`)
-    const url = await response.text()
-    return url
-  }
+    const response = await fetch(`${config.server}/api-address`);
+    const url = await response.text();
+    return url;
+  };
 
   const createParticipant = async (): Promise<Participant> => {
     const response = await fetch(
@@ -161,10 +165,10 @@ export const Meeting = (): JSX.Element => {
       {
         method: 'POST'
       }
-    )
-    const participant = await response.json()
-    return participant
-  }
+    );
+    const participant = await response.json();
+    return participant;
+  };
 
   const connectMeeting = async (
     apiAddress: string,
@@ -172,7 +176,7 @@ export const Meeting = (): JSX.Element => {
     mediaStream: MediaStream
   ): Promise<void> => {
     if (meetingId == null) {
-      throw new Error('meetingId not defined')
+      throw new Error('meetingId not defined');
     }
 
     const mediaInits: MediaInit[] = [
@@ -191,23 +195,23 @@ export const Meeting = (): JSX.Element => {
       },
       ...createRecvTransceivers('audio', RECV_AUDIO_COUNT),
       ...createRecvTransceivers('video', RECV_VIDEO_COUNT)
-    ]
+    ];
 
     await vpaas.joinMeeting({
       meetingId,
       participantId: participant.id,
       participantSecret: participant.participant_secret,
       apiAddress
-    })
+    });
 
-    vpaas.connect({ mediaInits })
-  }
+    vpaas.connect({ mediaInits });
+  };
 
   const getEncodings = (
     mediaStream: MediaStream
   ): MediaEncodingParameters[] | undefined => {
-    const [videoTrack] = mediaStream.getVideoTracks()
-    const { width, height } = videoTrack?.getSettings() ?? {}
+    const [videoTrack] = mediaStream.getVideoTracks();
+    const { width, height } = videoTrack?.getSettings() ?? {};
     if (width != null && height != null) {
       return [
         {
@@ -221,33 +225,33 @@ export const Meeting = (): JSX.Element => {
           maxWidth: width,
           maxHeight: height
         }
-      ]
+      ];
     } else {
-      return undefined
+      return undefined;
     }
-  }
+  };
 
   const isStreamActive = (stream: MediaStream | undefined): boolean => {
     return (
       stream?.getVideoTracks().some((track) => track.readyState === 'live') ??
       false
-    )
-  }
+    );
+  };
 
   const isAnyTrackActive = (
     tracks: MediaStreamTrack[] | undefined
   ): boolean => {
-    return tracks?.some((track) => track.readyState === 'live') ?? false
-  }
+    return tracks?.some((track) => track.readyState === 'live') ?? false;
+  };
 
   const getNewLocalStream = async (
     requestAudio: boolean,
     requestVideo: boolean
   ): Promise<MediaStream> => {
-    const devices = await navigator.mediaDevices.enumerateDevices()
-    const filteredDevices = await filterMediaDevices(devices)
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const filteredDevices = await filterMediaDevices(devices);
 
-    setSinkId(filteredDevices.audioOutput?.deviceId ?? '')
+    setSinkId(filteredDevices.audioOutput?.deviceId ?? '');
 
     const newLocalStream = await navigator.mediaDevices.getUserMedia({
       audio: requestAudio
@@ -260,75 +264,75 @@ export const Meeting = (): JSX.Element => {
             deviceId: filteredDevices.videoInput?.deviceId
           }
         : false
-    })
-    return newLocalStream
-  }
+    });
+    return newLocalStream;
+  };
 
   const handleSaveSettings = async (): Promise<void> => {
-    setSettingOpen(false)
+    setSettingOpen(false);
 
-    const audioActive = isAnyTrackActive(localStream?.getAudioTracks())
-    const videoActive = isAnyTrackActive(localStream?.getVideoTracks())
+    const audioActive = isAnyTrackActive(localStream?.getAudioTracks());
+    const videoActive = isAnyTrackActive(localStream?.getVideoTracks());
 
     if (audioActive || videoActive) {
-      const newLocalStream = await getNewLocalStream(audioActive, videoActive)
+      const newLocalStream = await getNewLocalStream(audioActive, videoActive);
 
       localStream?.getTracks().forEach((track) => {
-        track.stop()
-      })
+        track.stop();
+      });
 
-      setLocalStream(newLocalStream)
-      vpaas.setStream(newLocalStream)
+      setLocalStream(newLocalStream);
+      vpaas.setStream(newLocalStream);
 
       streamsInfo.forEach((streamInfo) => {
         if (streamInfo.type === 'video') {
           const preferredRid =
             (localStorage.getItem(
               LocalStorageKey.IncomingVideoQualityKey
-            ) as RTPStreamId) ?? RTPStreamId.High
+            ) as RTPStreamId) ?? RTPStreamId.High;
 
           if (streamInfo.mid != null && streamInfo.rid !== preferredRid) {
             unsubscribeStream(streamInfo)
               .then(() => {
                 subscribeStream(streamInfo, preferredRid).catch((e) => {
-                  console.error(e)
-                })
+                  console.error(e);
+                });
               })
               .catch((e) => {
-                console.error(e)
-              })
+                console.error(e);
+              });
           }
         }
-      })
+      });
     }
-  }
+  };
 
   useEffect(() => {
     const bootstrap = async (): Promise<void> => {
       if (vpaas == null) {
-        vpaas = initVpaas()
+        vpaas = initVpaas();
       }
 
-      const participant = await createParticipant()
+      const participant = await createParticipant();
 
-      const audioActive = true
-      const videoActive = true
+      const audioActive = true;
+      const videoActive = true;
 
-      const localStream = await getNewLocalStream(audioActive, videoActive)
+      const localStream = await getNewLocalStream(audioActive, videoActive);
 
-      setParticipant(participant)
-      setLocalStream(localStream)
+      setParticipant(participant);
+      setLocalStream(localStream);
 
-      const apiAddress = await getApiAddress()
-      await connectMeeting(apiAddress, participant, localStream)
-    }
+      const apiAddress = await getApiAddress();
+      await connectMeeting(apiAddress, participant, localStream);
+    };
     bootstrap().catch((e) => {
-      console.error(e)
-    })
+      console.error(e);
+    });
     return () => {
-      vpaas.disconnect()
-    }
-  }, [])
+      vpaas.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     // Check if it's connected (we received all the transceivers)
@@ -344,26 +348,26 @@ export const Meeting = (): JSX.Element => {
           const preferredRid =
             (localStorage.getItem(
               LocalStorageKey.IncomingVideoQualityKey
-            ) as RTPStreamId) ?? RTPStreamId.High
+            ) as RTPStreamId) ?? RTPStreamId.High;
           subscribeStream(streamInfo, preferredRid).catch((e) => {
-            console.error(e)
-          })
+            console.error(e);
+          });
         }
-      })
+      });
     }
-  }, [streamsInfo, remoteTransceiversConfig])
+  }, [streamsInfo, remoteTransceiversConfig]);
 
-  let remoteParticipantsIds: string[] = []
+  let remoteParticipantsIds: string[] = [];
   if (roster != null) {
-    remoteParticipantsIds = Object.keys(roster)
+    remoteParticipantsIds = Object.keys(roster);
     remoteParticipantsIds = remoteParticipantsIds.filter(
       (id) => id !== participant?.id
-    )
+    );
   }
 
-  const videoTracks = localStream?.getVideoTracks()
+  const videoTracks = localStream?.getVideoTracks();
   const videoTrackId =
-    videoTracks != null && videoTracks.length !== 0 ? videoTracks[0].id : ''
+    videoTracks != null && videoTracks.length !== 0 ? videoTracks[0].id : '';
 
   // Only re-render the selfie if the videoTrack id changes
   const selfie = useMemo(
@@ -377,8 +381,7 @@ export const Meeting = (): JSX.Element => {
       />
     ),
     [videoTrackId]
-  )
-  /*
+
   useEffect(() => {
     const interval = setInterval(() => {
       setHpProgress((prev) => {
@@ -386,7 +389,7 @@ export const Meeting = (): JSX.Element => {
           clearInterval(interval);
           return 0;
         }
-        return prev - 1; // HP decreases by 1% every second
+        return prev - 1; // **EDIT HP decreases by 1% every second
       });
     }, 1000); // 1 second interval
 
@@ -396,12 +399,18 @@ export const Meeting = (): JSX.Element => {
 
   return (
     <div className="Meeting">
+      {/* Room Code Display */}
+      <div style={{ position: 'absolute', top: '50px', left: '10px', color: 'white' }}>
+        Room Code: {meetingId}
+      </div>
+
       {remoteParticipantsIds.length > 0 && (
         <RemoteParticipants
           remoteParticipantsIds={remoteParticipantsIds}
           streamsInfo={streamsInfo}
           remoteTransceiversConfig={remoteTransceiversConfig}
           sinkId={sinkId}
+          colors={{}} // Pass colors mapping if needed
         />
       )}
   
@@ -422,12 +431,12 @@ export const Meeting = (): JSX.Element => {
       <Settings
         isOpen={settingsOpen}
         onCancel={() => {
-          setSettingOpen(false)
+          setSettingOpen(false);
         }}
         onSave={() => {
           handleSaveSettings().catch((e) => {
-            console.error(e)
-          })
+            console.error(e);
+          });
         }}
       />
   
@@ -439,15 +448,18 @@ export const Meeting = (): JSX.Element => {
           presentationStream={presentationStream}
           onPresentationStreamChange={setPresentationStream}
           onSettingsOpen={() => {
-            setSettingOpen(true)
+            setSettingOpen(true);
           }}
         />
       )}
   
       {/* HP Bar */}
       <div className="HpBarContainer">
-        <div className="HpBar" style={{ width: `${hpProgress}%` }}></div>
+        <div
+          className="HpBar"
+          style={{ width: `${hpProgress}%`, backgroundColor: playerColour }}
+        ></div>
       </div>
     </div>
-  )
-}
+  );
+};

@@ -1,25 +1,39 @@
-import {useState, useEffect} from 'react';
+import { useState } from 'react'
 import { Box, BoxHeader, Button } from '@pexip/components'
 import { useNavigate } from 'react-router-dom'
 import { config } from '../config'
 
 import './CreateMeeting.css'
 
-export const CreateMeeting = (): JSX.Element => {
-  const navigate = useNavigate()
+interface CreateMeetingProps {
+  playerColour: string;
+  setPlayerColour: (color: string) => void;
+}
 
-  const handleClick = async (): Promise<void> => {
-    const url = config.server
+export const CreateMeeting = ({ playerColour, setPlayerColour }: CreateMeetingProps): JSX.Element => {
+  const navigate = useNavigate()
+  const [meetingCode, setMeetingCode] = useState<string>(''); // State for meeting code
+
+  const handleCreateClick = async (): Promise<void> => {
+    const url = config.server;
     try {
       const response = await fetch(`${url}/meetings`, {
         method: 'POST'
-      })
-      const data = await response.json()
-      navigate(`/meetings/${data.id}`)
+      });
+      const data = await response.json();
+      navigate(`/meetings/${data.id}`);
     } catch (e) {
-      console.error('Cannot create the meeting')
+      console.error('Cannot create the meeting', e);
     }
-  }
+  };
+
+  const handleJoinClick = (): void => {
+    if (meetingCode.trim() !== '') {
+      navigate(`/meetings/${meetingCode}`);
+    } else {
+      console.error('Meeting code is required');
+    }
+  };
 
   return (
     <div className="CreateMeeting">
@@ -31,49 +45,59 @@ export const CreateMeeting = (): JSX.Element => {
           <h3>Welcome to the Lobby</h3>
         </BoxHeader>
         <div className="BoxContainer">
-          {/* player name */}
-          <label htmlFor="playerName">Enter your name:</label>
-          <input
-          type="text"
-          id="playerName"
-          name="playerName"
-          placeholder={`player${Math.floor(Math.random() * 1000)}`}
-          onChange={(e) => setPlayerName(e.target.value)}
-          />
+            {/* player color */}
+            <label htmlFor="playerColor">Choose your player color:</label><br />
+            <div className="color-buttons">
+            <button
+              style={{ backgroundColor: 'red', borderRadius: '50%', width: '30px', height: '30px' }}
+              onClick={() => setPlayerColour('red')}
+            >
+            </button>
+            <button
+              style={{ backgroundColor: 'blue', borderRadius: '50%', width: '30px', height: '30px' }}
+              onClick={() => setPlayerColour('blue')}
+            >
+            </button>
+            <button
+              style={{ backgroundColor: 'yellow', borderRadius: '50%', width: '30px', height: '30px' }}
+              onClick={() => setPlayerColour('yellow')}
+            >
+            </button>
+            <button
+              style={{ backgroundColor: 'green', borderRadius: '50%', width: '30px', height: '30px' }}
+              onClick={() => setPlayerColour('green')}
+            >
+            </button>
+            </div>
+            <br />
+            <p>Chosen color: {playerColour || 'red'}</p>
 
-          {/* enter shared url */}
-          <label htmlFor="gameUrl">Enter game URL:</label>
+          <div className="JoinContainer">
           <input
             type="text"
-            id="gameUrl"
-            name="gameUrl"
-            placeholder="https://example.com/meeting/123"
-            onChange={(e) => setGameUrl(e.target.value)}
+            placeholder="Enter meeting code"
+            value={meetingCode}
+            onChange={(e) => setMeetingCode(e.target.value)} // Update state on input change
           />
           <Button
-            variant="secondary"
+            variant="primary"
             colorScheme="light"
-            onClick={() => {
-              if (gameUrl) {
-                navigate(gameUrl)
-              } else {
-                console.error('No URL provided')
-              }
-            }}
+            onClick={handleJoinClick}
           >
-            Join Game
+            Join
           </Button>
-          {/* end of new changes */}
+        </div>
 
-
-          <p>
+          <br />
+            <p>
             Click on <b>Create Game</b> and share link with other players.
-          </p>
+            </p>
           <Button
             variant="primary"
             colorScheme="light"
             onClick={() => {
-              handleClick().catch((e) => {
+              console.log(`Player color selected: ${playerColour}`);
+              handleCreateClick().catch((e) => {
                 console.error(e)
               })
             }}

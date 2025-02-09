@@ -390,7 +390,7 @@ export const Meeting = ({ playerColour }: MeetingProps): JSX.Element => {
           clearInterval(interval);
           return 0;
         }
-        return prev - 1; // HP decreases by 1% every second
+        return prev - 1; // **EDIT HP decreases by 1% every second
       });
     }, 1000); // 1 second interval
 
@@ -451,7 +451,10 @@ export const Meeting = ({ playerColour }: MeetingProps): JSX.Element => {
   
       {/* HP Bar */}
       <div className="HpBarContainer">
-        <div className="HpBar" style={{ width: `${hpProgress}%` }}></div>
+        <div
+          className="HpBar"
+          style={{ width: `${hpProgress}%`, backgroundColor: playerColour }}
+        ></div>
       </div>
     </div>
   );

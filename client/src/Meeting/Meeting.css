@@ -55,7 +55,7 @@
     
     .HpBar {
       height: 100%;
-      background-color: green;
+      /* background-color: green; */
       border-radius: 5px;
     }
   }

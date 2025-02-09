@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const socket = io("http://10.41.180.28:5000");
 
 export const WebcamPage = () => {
   const [frames, setFrames] = useState<{ [key: string]: string }>({});

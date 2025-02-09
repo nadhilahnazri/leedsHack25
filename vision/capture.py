@@ -200,7 +200,7 @@ def connect_to_server():
     """Attempt to connect to the server and wait until connected"""
     while not sio.connected:
         try:
-            sio.connect("http://localhost:5000")  # Replace with your actual server IP
+            sio.connect("http://10.41.180.28:5000")  # Replace with your actual server IP
             sio.emit("set_local")  # Identify as the local vision system
             print("✅ Connected to WebSocket server")
             start_video_capture()  # Start video capture once connected
